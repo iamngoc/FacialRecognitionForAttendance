@@ -133,7 +133,7 @@ class TestBackendAPI:
         assert r.json()["status"] == "ok"
 
     def test_employees_list(self, backend):
-        """GET /Employee returns list with Schewe and Nguyen."""
+        """GET /Employee returns list with Schmitt and Nguyen."""
         r = requests.get(f"{backend}/employees")
         assert r.status_code == 200
         list = r.json()
@@ -141,8 +141,8 @@ class TestBackendAPI:
         assert len(list) == 2, \
             f"Expect 2 Employees, found {len(list)}"
         names = [e["name"] for e in list]
-        assert "Jonas Schewe"  in names, "Jonas Schewe is missing!"
-        assert "Ngoc Nguyen" in names, "Ngoc Nguyen is missing!"
+        assert "Max Schmitt"  in names, "Max Schmitt is missing!"
+        assert "Anna Nguyen" in names, "Anna Nguyen is missing!"
         print(f"\n   Employees: {names}")
         for e in list:
             print(f"   {e['name']}: "
@@ -177,17 +177,17 @@ class TestBackendAPI:
         assert isinstance(d["scans"], list)
         print(f"\n   Today report: {len(d['scans'])} Scans")
 
-    def test_report_week_jonas(self, backend):
-        """GET /report/week/1 → Jonas Schewe."""
+    def test_report_week_max(self, backend):
+        """GET /report/week/1 → Max Schmitt."""
         r = requests.get(f"{backend}/report/week/1")
         assert r.status_code == 200
-        assert r.json()["employees"] == "Jonas Schewe"
+        assert r.json()["employees"] == "Max Schmitt"
 
-    def test_report_week_ngoc(self, backend):
-        """GET /report/week/2 → Ngoc Nguyen."""
+    def test_report_week_anna(self, backend):
+        """GET /report/week/2 → Anna Nguyen."""
         r = requests.get(f"{backend}/report/week/2")
         assert r.status_code == 200
-        assert r.json()["employees"] == "Ngoc Nguyen"
+        assert r.json()["employees"] == "Anna Nguyen"
 
     def test_report_unknown_id_return_404(self, backend):
         """GET /report/week/999 → HTTP 404."""
@@ -205,7 +205,7 @@ class TestBackendAPI:
 class TestAfterEnrollment:
     """
     These tests check if enrollment was successful.
-    Run only AFTER Jonas and Ngoc have been registered!
+    Run only AFTER Max and Anna have been registered!
     """
 
     def test_2_employees_have_embedding(self, backend):
@@ -216,8 +216,8 @@ class TestAfterEnrollment:
         assert len(without) == 0, \
             (f"This employee doesn't have embedding: {without}\n"
              f"Please complete the enrollment process first.:\n"
-             f"  python scripts/enrollment-script.py --id 1 --name 'Jonas Schewe'\n"
-             f"  python scripts/enrollment-script.py --id 2 --name 'Ngoc Nguyen'")
+             f"  python scripts/enrollment-script.py --id 1 --name 'Max Schmitt'\n"
+             f"  python scripts/enrollment-script.py --id 2 --name 'Anna Nguyen'")
         print(f"\n   all employees do have embedding!")
 
 
