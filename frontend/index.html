@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SleepyDurain World Facial Recognization - Working Hours Recording</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: 'Nunito', sans-serif;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          min-height: 100vh;
+          color: white;
+          display: flex;
+          flex-direction: column;
+        }
+        header {
+          padding: 20px 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+        .logo { font-size: 22px; font-weight: 900; }
+        .logo span { color: #4ECDC4; }
+        #time { font-size: 28px; font-weight: 700; color: #FFE66D; }
+        #date { font-size: 14px; color: #8a9bc4; text-align: right; }
+    /* Greeting zone */
+    #greeting-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .welcome-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 24px;
+      padding: 50px 60px;
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+      transition: all .5s ease;
+    }
+    .welcome-card.active {
+      background: rgba(78,205,196,.1);
+      border-color: #4ECDC4;
+      box-shadow: 0 0 40px rgba(78,205,196,.2);
+    }
+    .welcome-card.active.go {
+      background: rgba(199,125,255,.1);
+      border-color: #C77DFF;
+      box-shadow: 0 0 40px rgba(199,125,255,.2);
+    }
+    .big-emoji { font-size: 80px; margin-bottom: 20px; display: block; }
+    .person-name {
+      font-size: 42px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .scan-info {
+      font-size: 20px;
+      color: #8a9bc4;
+      margin-bottom: 20px;
+    }
+    .scan-type {
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 99px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .come { background: rgba(116,198,157,.2); color: #74C69D; }
+    .go  { background: rgba(199,125,255,.2); color: #C77DFF; }
+    .confidence_score { font-size: 13px; color: #6272A4; }
+    .standby-text {
+      font-size: 20px;
+      color: #8a9bc4;
+      margin-top: 10px;
+    }
+
+    /* latest Scans */
+    #scan-list {
+      padding: 0 40px 30px;
+    }
+    .list-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #8a9bc4;
+      margin-bottom: 12px;
+    }
+    .scan-items {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .scan-item {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+    .scan-item.sname { font-weight: 700; color: white; }
+    .scan-item.stime { color: #8a9bc4; font-size: 11px; }
+    .scan-item.stype {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 99px;
+      margin-left: 4px;
+    }
+    .c { background: rgba(116,198,157,.2); color: #74C69D; }
+    .g { background: rgba(199,125,255,.2); color: #C77DFF; }
+    footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 11px;
+      color: #3a4a6a;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">F<span>&</span>T GmbH</div>
+    <div>
+      <div id="time">--:--:--</div>
+      <div id="date"></div>
+    </div>
+  </header>
+
+  <div id="greeting-box">
+    <div class="welcome-card" id="card">
+      <span class="big-emoji" id="emoji">👋</span>
+      <div class="person-name" id="personName">Welcome!</div>
+      <div class="scan-info" id="scanInfo">Please look into the camera</div>
+      <div id="scan_type"></div>
+      <div class="confidence_score" id="confidence_score"></div>
+    </div>
+  </div>
+
+  <div id="scan-list">
+    <div class="list-title">📋 Today Scans</div>
+    <div class="scan-items" id="scanItems">
+      <div style="color:#6272A4;font-size:12px">No scans yet today...</div>
+    </div>
+  </div>
+
+  <footer>SleepyDurain World Facial Recognization v1.0 — Powered by ArcFace</footer>
+
+  <script>
+    const API = 'http://localhost:8000';
+    let displayedTimer = null;
+
+    // update time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('time').textContent =
+        now.toLocaleTimeString('de-DE');
+      document.getElementById('date').textContent =
+        now.toLocaleDateString('de-DE', {
+          weekday:'long', year:'numeric',
+          month:'long', day:'numeric'
+        });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // display greetings
+    function displayGreeting(datas) {
+      const card    = document.getElementById('card');
+      const emoji    = document.getElementById('emoji');
+      const name     = document.getElementById('personName');
+      const info     = document.getElementById('scanInfo');
+      const type      = document.getElementById('scan_type');
+      const conf     = document.getElementById('confidence_score');
+
+      const came = datas.scan_type === 'COME';
+      card.className = 'welcome-card active' + (came ? '' : ' go');
+      emoji.textContent = came ? '🌅' : '🌙';
+      name.textContent  = datas.name;
+      info.textContent  = `${datas.time} h`;
+      type.innerHTML = `<span class="scan-type ${came ? 'come':'go'}">
+        ${came ? '✅ COME' : '👋 GO'}</span>`;
+      conf.textContent  = `AI_Safety: ${(datas.conf * 100).toFixed(1)}%`;
+
+      if (displayGreeting) clearTimeout(displayGreeting);
+      displayGreeting = setTimeout(standbySet, 8000);
+    }
+
+    function standbySet() {
+      const card = document.getElementById('card');
+      card.className = 'welcome-card';
+      document.getElementById('emoji').textContent = '👋';
+      document.getElementById('personName').textContent = 'welcome!';
+      document.getElementById('scanInfo').textContent =
+        'Please look into the camera';
+      document.getElementById('scan_type').innerHTML = '';
+      document.getElementById('confidence_score').textContent = '';
+    }
+
+    // load today Scans
+    async function loadTodayScans() {
+      try {
+        const r = await fetch(`${API}/report/today`);
+        const d = await r.json();
+        const container = document.getElementById('scanItems');
+
+        if (d.scans.length === 0) {
+          container.innerHTML =
+            '<div style="color:#6272A4;font-size:12px">No scans yet today...</div>';
+          return;
+        }
+
+        container.innerHTML = d.scans.map(s => `
+          <div class="scan-item">
+            <div class="sname">${s.name}
+              <span class="stype ${s.scan_type==='COME'?'k':'g'}">
+                ${s.scan_type}
+              </span>
+            </div>
+            <div class="stime">${s.time}</div>
+          </div>
+        `).join('');
+
+        // display newest arrival
+        const newest = d.scans[d.scans.length - 1];
+        if (newest) displayGreeting(newest);
+
+      } catch(e) {
+        console.log('API not available:', e);
+      }
+    }
+
+    // update every 3 seconds
+    setInterval(loadTodayScans, 3000);
+    loadTodayScans();
+  </script>
+</body>
+</html>
