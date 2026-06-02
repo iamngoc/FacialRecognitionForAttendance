@@ -71,8 +71,8 @@ ORDER BY z.scan_date DESC, e.name;
 INSERT INTO employee (name, email, department, position_, date_of_birth, entry_date)
 
 VALUES
-    ('Jonas Schewe', 'schewe@sdw.de', 'IT', 'Senior', '2001-03-01', '2025-05-01'),
-    ('Ngoc Nguyen', 'nguyen@sdw.de', 'IT', 'Junior', '2000-12-3', '2025-12-01')
+    ('Max Schmitt', 'schmitt@sdw.de', 'IT', 'Senior', '2001-03-01', '2025-05-01'),
+    ('Anna Nguyen', 'nguyen@sdw.de', 'IT', 'Junior', '2000-12-3', '2025-12-01')
    ON CONFLICT (email) DO NOTHING;
 
 DO $$ BEGIN
@@ -80,5 +80,5 @@ RAISE NOTICE '************************'
 RAISE NOTICE 'Sleepy Durian World initialized';
 RAISE NOTICE 'Tables: employees, timerecording';
 RAISE NOTICE 'View: office_hours';
-RAISE NOTICE 'Entries: Jonas Schewe, Ngoc Nguyen';
+RAISE NOTICE 'Entries: Max Schmitt, Anna Nguyen';
 END $$
