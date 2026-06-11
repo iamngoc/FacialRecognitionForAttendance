@@ -35,9 +35,9 @@ def camera_enrollment(employee_id: int, name: str, number_of_photos=number_photo
     """
     logger.info(f"Start enrollment for: {name} with id = {employee_id} ...")
     logger.info(f"It will take {number_of_photos} photos.")
-    logger.info(f"Please press SPACE for each photo, DELETE to cancel.")
+    logger.info(f"Please press SPACE for each photo, q to cancel.")
 
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     if not camera.isOpened():
         logger.error("Camera not found.")
         return False
@@ -69,18 +69,18 @@ def camera_enrollment(employee_id: int, name: str, number_of_photos=number_photo
                     (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         cv2.putText(frame, instruction,
                     (10, h - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-        cv2.putText(frame, "SPACE = Photo --- DEL = Cancel",
+        cv2.putText(frame, "SPACE = Photo --- q = Cancel",
                     (10, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
         cv2.imshow(f"Enrollment of {name}", frame)
         taste = cv2.waitKey(1) & 0xFF
 
-        if taste == 3014656:  # DEL key
+        if taste == ord('q'):  # DEL key
             logger.info("Enrollment cancelled!")
             break
         elif taste == 32:  # SPACE key
             photos.append(frame.copy())
             photo_nr += 1
-            logger.info(f"Photo {photo_nr}/{number_of_photos} taken")  # ✅ Fixed: no +1 here
+            logger.info(f"Photo {photo_nr}/{number_of_photos} taken") 
 
             cv2.putText(frame, "Photo taken successfully!",
                         (w // 2 - 100, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 200, 0), 2)

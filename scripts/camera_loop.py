@@ -78,7 +78,7 @@ def main():
         sys.exit(1)
 
     # open the camera
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     if not camera.isOpened():
         logger.error("camera not found!")
         sys.exit(1)
