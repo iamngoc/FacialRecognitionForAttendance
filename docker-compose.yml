@@ -14,6 +14,8 @@ services:
       POSTGRES_DB: sd_timerecording
       POSTGRES_USER: sd_admin
       POSTGRES_PASSWORD: sd_secret_6868
+      TZ: 'Europe/Berlin'
+      PGTZ: 'Europe/Berlin'
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -38,10 +40,12 @@ services:
     environment:
       DATABASE_URL: postgresql://sd_admin:sd_secret_6868@database:5432/sd_timerecording
       THRESHOLD: '0.45'
-      ANTI_SPAM_SEC: '30'
+      ANTI_SPAM_SEC: '15'
+      TZ: 'Europe/Berlin'
       LOG_LEVEL: 'INFO'
     volumes:
       - ./data:/app/data
+      - model_cache:/root/.insightface
     ports:
       - '8000:8000'
     healthcheck:
@@ -49,7 +53,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s #more time for model-warmup
 
   # Web Dashboard (nginx)
   dashboard:
@@ -68,6 +72,9 @@ services:
 volumes:
   db_data:
     name: sd_db_data
+  model_cache:
+    name: sd_model_cache
+
 
 
 
