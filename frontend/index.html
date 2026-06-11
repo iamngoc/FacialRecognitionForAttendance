@@ -8,10 +8,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-          font-family: 'Nunito', sans-serif;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          font-family: 'Outfit', sans-serif;
+          background: linear-gradient(135deg, #8a9bc4  5%, #F7F3EE 100%, #F0F4F8 5%);
           min-height: 100vh;
-          color: white;
+          color: midnightblue;
           display: flex;
           flex-direction: column;
         }
@@ -22,10 +22,10 @@
           align-items: center;
           border-bottom: 1px solid rgba(255,255,255,.1);
         }
-        .logo { font-size: 22px; font-weight: 900; }
-        .logo span { color: #4ECDC4; }
-        #time { font-size: 28px; font-weight: 700; color: #FFE66D; }
-        #date { font-size: 14px; color: #8a9bc4; text-align: right; }
+        .logo { font-size: 28px; font-weight: 900; }
+        .logo span { color: #2E3A4A; }
+        #time { font-size: 29px; font-weight: 700; color: #FFE65F; }
+        #date { font-size: 16px; color: #8a9bc4; text-align: right; }
     /* Greeting zone */
     #greeting-box {
       flex: 1;
@@ -45,14 +45,14 @@
       transition: all .5s ease;
     }
     .welcome-card.active {
-      background: rgba(78,205,196,.1);
-      border-color: #4ECDC4;
+      background: rgba(78,200,196,.1);
+      border-color: #FFE65F;
       box-shadow: 0 0 40px rgba(78,205,196,.2);
     }
     .welcome-card.active.go {
-      background: rgba(199,125,255,.1);
-      border-color: #C77DFF;
-      box-shadow: 0 0 40px rgba(199,125,255,.2);
+      background: rgba(100,200,2,.1);
+      border-color: #FFE65F;
+      box-shadow: 0 0 40px rgba(100,200,2,.2);
     }
     .big-emoji { font-size: 80px; margin-bottom: 20px; display: block; }
     .person-name {
@@ -69,11 +69,11 @@
       display: inline-block;
       padding: 6px 20px;
       border-radius: 99px;
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 700;
       margin-bottom: 10px;
     }
-    .come { background: rgba(116,198,157,.2); color: #74C69D; }
+    .come { background: rgba(116,198,157,.2); color: #74C68A; }
     .go  { background: rgba(199,125,255,.2); color: #C77DFF; }
     .confidence { font-size: 13px; color: #6272A4; }
     .standby-text {
@@ -89,7 +89,7 @@
     .list-title {
       font-size: 16px;
       font-weight: 700;
-      color: #8a9bc4;
+      color: #FFE66D;
       margin-bottom: 12px;
     }
     .scan-items {
@@ -126,7 +126,7 @@
 </head>
 <body>
   <header>
-    <div class="logo">Sleepy<span>Durian</span>World</div>
+    <div class="logo">Sleepy Durian World</div>
     <div>
       <div id="time">--:--:--</div>
       <div id="date"></div>
@@ -174,7 +174,7 @@
       card.className = 'welcome-card active' + (came ? '' : ' go');
       document.getElementById('emoji').textContent = came ? '🌅' : '🌙';
       document.getElementById('personName').textContent  = data.name;
-      document.getElementById('scanInfo').textContent  = data.time + 'h';
+      document.getElementById('scanInfo').textContent  = data.time;
       const type      = document.getElementById('scan_type').innerHTML = `<span class="scan-type ${came ? 'come':'go'}">
         ${came ? '✅ COME' : '👋 GO'}</span>`;
       const pct = ((data.confidence || 0) * 100).toFixed(1);
