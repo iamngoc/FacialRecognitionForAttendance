@@ -27,6 +27,7 @@ class FacialRecognizingEngine:
         self.threshold = threshold # high thres=stricter, low thres=toleranter
         self.model = None
         self.model_name = model_name
+        self._load_model(model_name)
 
     def _load_model(self, model_name):
         """
@@ -34,7 +35,7 @@ class FacialRecognizingEngine:
         """
         try:
             logger.info(f"Loading ArcFace model '{model_name}'...")
-            self.model = FaceAnalysis(name=model_name, provider=['GPUExecutionProvider'])
+            self.model = FaceAnalysis(name=model_name, provider=['CPUExecutionProvider'])
             self.model.prepare(ctx_id=0, det_size=(640, 640))
 
             logger.info(f"ArcFace model '{model_name}' successfully loaded.")
@@ -121,9 +122,9 @@ class FacialRecognizingEngine:
             logger.info(f"Person {best_target['name']} detected"
                         f" with score: {best_score:.4f}")
 
-            return {'mitarbeiter_id': best_target['id'],
+            return {'employee_id': best_target['id'],
                     'name': best_target['name'],
-                    'score': best_score,
+                    'confidence': best_score,
                     'embedding': camera_embedding}
         else:
             logger.info(f"WARNING: unrecognized Person detected"

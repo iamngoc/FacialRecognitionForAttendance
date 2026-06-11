@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SleepyDurain World Facial Recognization - Working Hours Recording</title>
+    <title>Sleepy Durian World Facial Recognition - Working Hours Recording</title>
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -75,7 +75,7 @@
     }
     .come { background: rgba(116,198,157,.2); color: #74C69D; }
     .go  { background: rgba(199,125,255,.2); color: #C77DFF; }
-    .confidence_score { font-size: 13px; color: #6272A4; }
+    .confidence { font-size: 13px; color: #6272A4; }
     .standby-text {
       font-size: 20px;
       color: #8a9bc4;
@@ -126,7 +126,7 @@
 </head>
 <body>
   <header>
-    <div class="logo">F<span>&</span>T GmbH</div>
+    <div class="logo">Sleepy<span>Durian</span>World</div>
     <div>
       <div id="time">--:--:--</div>
       <div id="date"></div>
@@ -139,7 +139,7 @@
       <div class="person-name" id="personName">Welcome!</div>
       <div class="scan-info" id="scanInfo">Please look into the camera</div>
       <div id="scan_type"></div>
-      <div class="confidence_score" id="confidence_score"></div>
+      <div class="confidence" id="confidence"></div>
     </div>
   </div>
 
@@ -150,46 +150,38 @@
     </div>
   </div>
 
-  <footer>SleepyDurain World Facial Recognization v1.0 — Powered by ArcFace</footer>
+  <footer>Sleepy Durian World Facial Recognition v1.0 — Powered by ArcFace</footer>
 
   <script>
     const API = 'http://localhost:8000';
-    let displayedTimer = null;
+    let greetingTimer = null;
 
     // update time
     function updateTime() {
       const now = new Date();
-      document.getElementById('time').textContent =
-        now.toLocaleTimeString('de-DE');
-      document.getElementById('date').textContent =
-        now.toLocaleDateString('de-DE', {
-          weekday:'long', year:'numeric',
-          month:'long', day:'numeric'
+      document.getElementById('time').textContent = now.toLocaleTimeString('de-DE');
+      document.getElementById('date').textContent = now.toLocaleDateString('de-DE', {
+          weekday:'long', year:'numeric', month:'long', day:'numeric'
         });
     }
     setInterval(updateTime, 1000);
     updateTime();
 
     // display greetings
-    function displayGreeting(datas) {
+    function displayGreeting(data) {
       const card    = document.getElementById('card');
-      const emoji    = document.getElementById('emoji');
-      const name     = document.getElementById('personName');
-      const info     = document.getElementById('scanInfo');
-      const type      = document.getElementById('scan_type');
-      const conf     = document.getElementById('confidence_score');
-
-      const came = datas.scan_type === 'COME';
+      const came = data.scan_type === 'COME';
       card.className = 'welcome-card active' + (came ? '' : ' go');
-      emoji.textContent = came ? '🌅' : '🌙';
-      name.textContent  = datas.name;
-      info.textContent  = `${datas.time} h`;
-      type.innerHTML = `<span class="scan-type ${came ? 'come':'go'}">
+      document.getElementById('emoji').textContent = came ? '🌅' : '🌙';
+      document.getElementById('personName').textContent  = data.name;
+      document.getElementById('scanInfo').textContent  = data.time + 'h';
+      const type      = document.getElementById('scan_type').innerHTML = `<span class="scan-type ${came ? 'come':'go'}">
         ${came ? '✅ COME' : '👋 GO'}</span>`;
-      conf.textContent  = `AI_Safety: ${(datas.conf * 100).toFixed(1)}%`;
+      const pct = ((data.confidence || 0) * 100).toFixed(1);
+      document.getElementById('confidence_score').textContent = `AI Safety: ${pct}%`;
 
-      if (displayGreeting) clearTimeout(displayGreeting);
-      displayGreeting = setTimeout(standbySet, 8000);
+      if (greetingTimer) clearTimeout(greetingTimer);
+      greetingTimer = setTimeout(standbySet, 8000);
     }
 
     function standbySet() {
@@ -200,7 +192,7 @@
       document.getElementById('scanInfo').textContent =
         'Please look into the camera';
       document.getElementById('scan_type').innerHTML = '';
-      document.getElementById('confidence_score').textContent = '';
+      document.getElementById('confidence').textContent = '';
     }
 
     // load today Scans

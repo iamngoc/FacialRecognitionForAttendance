@@ -12,9 +12,9 @@ from sqlalchemy import (Column, Integer, String, Float, Boolean,
 from sqlalchemy.orm import relationship, declarative_base
 from pgvector.sqlalchemy import Vector
 
-base = declarative_base()
+Base = declarative_base()
 
-class Employee(base):
+class Employee(Base):
     __tablename__ = "employees"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
@@ -23,7 +23,7 @@ class Employee(base):
     department = Column(String(100), default="IT")
     position_ = Column(String(100), default="UA")
     date_of_birth = Column(Date, nullable=True)
-    entry_date = Column(Date, default=date.today())
+    entry_date = Column(Date, default=date.today)
 
     embedding = Column(Vector(512), nullable=True)
     photo_path = Column(String(500), nullable=True)
@@ -32,17 +32,17 @@ class Employee(base):
     updated_in= Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     # link to Time Recording
-    enter_time = relationship("TimeRecording", backref="employees")
+    enter_time = relationship("TimeRecording", back_populates="employee")
 
     def __repr__(self):
         return f"<Employee id = {self.id}, name = ('{self.name}'>"
 
-class TimeRecording(base):
-    __tablename__ = "timerecordings"
+class TimeRecording(Base):
+    __tablename__ = "timerecording"
     id = Column(Integer, primary_key=True, index=True)
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
-    scan_time = Column(DateTime, default=datetime.now(), nullable=False)
-    scan_date = Column(Date, default=date.today(), nullable=False)
+    scan_time = Column(DateTime, default=datetime.now, nullable=False)
+    scan_date = Column(Date, default=date.today, nullable=False)
     scan_type = Column(String(20), nullable=False) #come/go
     camera_id = Column(String(100),default="entrance_00")
     confidence_score = Column(Float, nullable=False)
@@ -53,7 +53,7 @@ class TimeRecording(base):
 
     # constraint: only allow to come or go
     __table_args__ = (
-        CheckConstraint("scan_typ IN ('COME', ('GO')", name="chk_scan_typ"),
+        CheckConstraint("scan_typ IN ('COME', 'GO')", name="chk_scan_typ"),
     )
 
     def __repr__(self):

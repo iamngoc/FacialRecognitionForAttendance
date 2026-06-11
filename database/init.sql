@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS timerecording (
     id  SERIAL   PRIMARY KEY,
     employee_id INTEGER     NOT NULL
                 REFERENCES employees(id) ON DELETE CASCADE,
-    scan_time   TIMESTAMP   NOT NULL DEFAULT,
+    scan_time   TIMESTAMP   NOT NULL DEFAULT NOW(),
     scan_date   DATE    NOT NULL DEFAULT CURRENT_DATE,
     scan_type   VARCHAR(20)     NOT NULL
                 CHECK (scan_type IN ('COME', 'GO')),
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS timerecording (
 CREATE INDEX IF NOT EXISTS idx_by_employee
     ON timerecording(employee_id, scan_date);
 CREATE INDEX IF NOT EXISTS idx_by_date
-    ON timerecording(scan_date DESC)
+    ON timerecording(scan_date DESC);
 
 -- View: office hours summary
 CREATE OR REPLACE VIEW office_hours AS
@@ -56,29 +56,27 @@ SELECT
     e.department,
     t.scan_date     AS date_,
     MIN(CASE WHEN t.scan_type = 'COME' THEN t.scan_time END) AS arrival,
-    MAX(CASE WHEN t.scan_type ) 'GO' THEN t.scan_time END) AS exit,
+    MAX(CASE WHEN t.scan_type = 'GO' THEN t.scan_time END) AS exit,
     ROUND(
         EXTRACT(EPOCH FROM (
             MAX(CASE WHEN t.scan_type='GO' THEN t.scan_time END) -
             MIN(CASE WHEN t.scan_type='COME' THEN t.scan_time END)
             )) /3600.0, 2)  AS working_hours
-FROM employee e
+FROM employees e
 JOIN timerecording t on e.id = t.employee_id
 GROUP BY e.id, e.name, e.department, t.scan_date
-ORDER BY z.scan_date DESC, e.name;
+ORDER BY t.scan_date DESC, e.name;
 
 -- original data: Sleepy Durian World Employees
-INSERT INTO employee (name, email, department, position_, date_of_birth, entry_date)
-
+INSERT INTO employees (name, email, department, position_, date_of_birth, entry_date)
 VALUES
-    ('Max Schmitt', 'schmitt@sdw.de', 'IT', 'Senior', '2001-03-01', '2025-05-01'),
-    ('Anna Nguyen', 'nguyen@sdw.de', 'IT', 'Junior', '2000-12-3', '2025-12-01')
-   ON CONFLICT (email) DO NOTHING;
+    ('Sleepy Durian', 'durian@sdw.de', 'IT', 'Admin', '2001-03-01', '2025-05-01')
+ON CONFLICT (email) DO NOTHING;
 
 DO $$ BEGIN
-RAISE NOTICE '************************'
+RAISE NOTICE '************************';
 RAISE NOTICE 'Sleepy Durian World initialized';
 RAISE NOTICE 'Tables: employees, timerecording';
 RAISE NOTICE 'View: office_hours';
-RAISE NOTICE 'Entries: Max Schmitt, Anna Nguyen';
+RAISE NOTICE 'Entries: Sleepy Durian';
 END $$

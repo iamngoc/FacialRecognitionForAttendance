@@ -17,7 +17,7 @@ import numpy as np
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p')
+                    datefmt='%Y-%m-%d %H:%M:%S %p')
 
 logger = logging.getLogger("camera")
 
@@ -28,7 +28,7 @@ DISPLAY_INTERVAL = 4 # second to display the greetings
 def send_frame(frame:np.ndarray) -> dict or None:
     """send an image to backend to do facial recognition"""
     try:
-        ok, buffer = cv2.imencode('.jpg', [frame, cv2.IMWRITE_JPEG_QUALITY, 90])
+        ok, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
         if not ok:
             return None
 
@@ -66,7 +66,7 @@ def main():
     """camera loop"""
     logger.info("Starting camera loop ...")
     logger.info(f"Backend URL: {BACKEND_URL}")
-    logger.info("Press Ctrl+C to exit")
+    logger.info("Press q to exit")
 
     # check backend connection
     try:
@@ -126,9 +126,9 @@ def main():
         cv2.putText(display_frame, f"{time_now}",
                     (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-        cv2.imshow("Facial Recognition from SleepyDurian - 'Ctrl+C' to exit", display_frame)
+        cv2.imshow("Facial Recognition from SleepyDurian - Facial Recognition [q = quit}", display_frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('Ctrl+C'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     camera.release()

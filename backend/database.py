@@ -8,14 +8,12 @@ from sqlalchemy.orm import sessionmaker
 # from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.declarative import declarative_base
 import logging
+from database_model import Base
 
 logger = logging.getLogger(__name__)
 
 # read database address from environment variable
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://")
-
-# define basic class
-base = declarative_base()
 
 # create engine (connection)
 engine = create_engine(DATABASE_URL,
@@ -44,7 +42,7 @@ def create_table():
     create table if not exists
     :return:
     """
-    base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
     logger.info("Table created/checked successfully.")
 
 def get_db():

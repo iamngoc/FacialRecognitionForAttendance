@@ -1,7 +1,7 @@
 # Sleepy Durian World Backend Dockerfile
 # python 3.9 + InsightFace + API
 
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 LABEL authors="sleepydurian"
 
 # System package for OpenCV and PostgreSQL
@@ -13,13 +13,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender-dev \
     libpq-dev \
     curl \
+    # ↓ C++ compiler + build tools needed by insightface
+    build-essential \
+    g++ \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
+
 
 WORKDIR /app
 
 # python dependencies (first copy then use Docker-Cache)
 COPY requirements.txt .
-RUN pip install --no-cache-dir --update pip && \
+RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # copy source code

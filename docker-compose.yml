@@ -1,13 +1,13 @@
-version: '3.9'
-# Sleepy Durian World - Facial recognization Time Recording
+#version: '3.9'
+# Sleepy Durian World - Facial recognition Time Recording
 # Start: docker-compose up --build
 # Stop: docker-compose down
 # Start some new: docker-compose down -v && docker-compose up--build
 
-service:
+services:
   # PostgreSQL database
   database:
-    image: postgres:15-alpine #pgvector/pgvector:pg15
+    image: pgvector/pgvector:pg15 #postgres:15-alpine
     container_name: sd_database
     restart: always
     environment:
@@ -25,7 +25,7 @@ service:
       timeout: 5s
       retries: 10
 
-# FastAPI backend
+  # FastAPI backend
   backend:
     build:
       context: ./backend
@@ -51,7 +51,7 @@ service:
       retries: 5
       start_period: 30s
 
-# Web Dashboard (nginx)
+  # Web Dashboard (nginx)
   dashboard:
     image: nginx:alpine
     container_name: sd_dashboard
@@ -66,8 +66,8 @@ service:
       - "3000:80"
 
 volumes:
-  db_datas:
-    name: sd_db_datas
+  db_data:
+    name: sd_db_data
 
 
 

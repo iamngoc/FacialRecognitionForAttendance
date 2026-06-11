@@ -37,13 +37,13 @@ from faceEngine import FacialRecognizingEngine
 # configurate Logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p')
+                    datefmt='%Y-%m-%d %H:%M:%S %p')
 
 logger = logging.getLogger("backend")
 
 # Configuration from environment variables
 THRESHOLD = float(os.getenv("THRESHOLD", "0.45"))
-ANTI_SPAM_SEC = int(os.getenv("ANTI_SPAM_SEC", "30"))
+ANTI_SPAM_SEC = int(os.getenv("ANTI_SPAM_SEC", "15"))
 
 # Global AI-Engine
 ai_engine: Optional[FacialRecognizingEngine] = None
@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI):
     # load AI model
     logger.info(f"Loading ArcFace AI model ...")
     ai_engine = FacialRecognizingEngine(threshold=THRESHOLD)
-    logger.info("System is ready. Facial Recognizing is running.")
+    logger.info("System is ready. Facial Recognition is running.")
 
     yield # Application runs here
 
@@ -72,7 +72,7 @@ async def lifespan(app: FastAPI):
 
 # create FastSPI app
 app = FastAPI(
-    title="Facial Recognization",
+    title="Facial Recognition",
     description="Time Recording automatically via ArcFace",
     version="1.0",
     lifespan=lifespan
@@ -100,12 +100,12 @@ class ScanAnswer(BaseModel):
 @app.get("/")
 async def root():
     """system status"""
-    return {"system": "Facial Recognizing by SleepyDurian",
+    return {"system": "Facial Recognition by SleepyDurian",
             "version": "1.0.0",
             "status": "Ready",
             "ai_engine": "ArcFace (InsightFace buffalo_1)",
             "threshold": THRESHOLD,
-            "time": datetime.now().strftime("%m/%d/%Y %I:%M:%S %p")}
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S %p")}
 
 @app.get("/employees")
 async def employees_list(db: Session = Depends(get_db)):
@@ -115,9 +115,8 @@ async def employees_list(db: Session = Depends(get_db)):
         {"id": e.id,
          "name": e.name,
          "email": e.email,
-         "phone_number": e.phone_number,
          "department": e.department,
-         "position": e.position,
+         "position": e.position_,
          "date_of_birth": e.date_of_birth,
          "entry_date": e.entry_date,
          "embedding": e.embedding is not None,
@@ -133,7 +132,7 @@ async def health():
 @app.get("/report/today")
 async def report_today(db: Session = Depends(get_db)):
     """display all scans for today"""
-    return {"date": datetime.now().strftime("%m/%d/%Y"),
+    return {"date": datetime.now().strftime("%Y-%m-%d"),
             "scans": crud_db_operation.today_report(db)}
 
 @app.get("/report/week/{employee_id}")
@@ -143,7 +142,7 @@ async def report_week(employee_id: int, db: Session = Depends(get_db)):
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
 
-    return {"date": datetime.now().strftime("%m/%d/%Y"),
+    return {"date": datetime.now().strftime("%Y-%m-%d"),
             "employee": employee.name,
             "scans": crud_db_operation.weekly_report(db, employee_id)}
 
@@ -194,7 +193,7 @@ async def scan_face(image: UploadFile = File(...),
                 recognized=True,
                 employee_id=emp_id,
                 name=result["name"],
-                confidence=result["confidence"],
+                confidence_score=result["confidence"],
                 message=(f"{result['name']}, please wait."
                          f"You can scan in the next {int(ANTI_SPAM_SEC-diff)} seconds.")
             )
@@ -220,7 +219,7 @@ async def scan_face(image: UploadFile = File(...),
         name=result["name"],
         scan_type=scan_type,
         time=time,
-        confidence=round(result["confidence"], 3),
+        confidence_score=round(result["confidence"], 3),
         message=message
     )
 
@@ -229,7 +228,7 @@ async def enroll_employee(employee_id: int,
                           images: list[UploadFile] = File(...),
                           db: Session = Depends(get_db)):
     """
-    Enroll a employee with more images. Compute the average embedding from all images.
+    Enroll an employee with more images. Compute the average embedding from all images.
     -> AI model can recognize the face from different angles and lighting
     :param employee_id:
     :param images:
@@ -241,16 +240,16 @@ async def enroll_employee(employee_id: int,
         raise HTTPException(status_code=404, detail=f"Employee with {employee_id} not found!")
 
     all_embeddings = []
-    missing_image = []
+    missing_images = []
     for image in images:
         try:
             # read the image file
-            content = image.read()
+            content = await image.read()
             image_array = np.frombuffer(content, np.uint8)
             i = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
             if i is None:
-                missing_image.append(image.filename)
+                missing_images.append(image.filename)
                 continue
 
             # compute embedding
@@ -258,11 +257,11 @@ async def enroll_employee(employee_id: int,
             if embedding is not None:
                 all_embeddings.append(embedding)
             else:
-                missing_image.append(f"{image.filename} (no face detected)")
+                missing_images.append(f"{image.filename} (no face detected)")
 
         except Exception as e:
             error = str(e)
-            missing_image.append(f"{image.filename} (Error: {error})")
+            missing_images.append(f"{image.filename} (Error: {error})")
 
     if not all_embeddings:
         raise HTTPException(status_code=400, detail="No face in loaded images detected!")
@@ -277,6 +276,17 @@ async def enroll_employee(employee_id: int,
         "success": succeed,
         "name": employee.name,
         "handling_images": len(all_embeddings),
-        "message": f"{name} enrolled successfully!, {len(all_embeddings)} handled."
+        'missing_images': missing_images,
+        "message": f"{name} enrolled successfully!, {len(all_embeddings)} handled.",
+
     }
 
+
+"""
+Problem
+Confidence was not saved and showed in camera_loop.py 
+  -PM - INFO - Sleepy Durian - None with None confidence-
+opencv takes so long time to open the camera about 5 Min. -> improve
+development for another user
+
+"""

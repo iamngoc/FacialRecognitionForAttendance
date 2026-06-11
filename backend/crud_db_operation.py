@@ -13,7 +13,7 @@ import numpy as np
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from backend.database_model import Employee, TimeRecording
+from database_model import Employee, TimeRecording
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ def determine_scan_typ(db: Session, employee_id: int) -> str:
     # latest scan for today
     latest_scan = (db.query(TimeRecording)
                    .filter(TimeRecording.employee_id == employee_id,TimeRecording.scan_date==today)
-                   .order_by(TimeRecording.scan_time)
+                   .order_by(desc(TimeRecording.scan_time))
                    .first())
 
     if latest_scan is None:
@@ -166,10 +166,10 @@ def today_report (db: Session) -> list[dict]:
 
     return [
         {"name": e.name,
-             "scan_type": t.scan_type,
-             "confidence_score": round(t.confidence_score, 3),
-             "camera_id": t.camera_id
-        }
+         "scan_type": t.scan_type,
+         "time": t.scan_time.strftime("%Y-%m-%d %H:%M:%S"),
+         "confidence_score": round(t.confidence_score, 3),
+         "camera_id": t.camera_id}
         for t, e in scans
     ]
 
