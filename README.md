@@ -1,4 +1,4 @@
-# 🍹 Sleepy Durian World – Facial Recognition Time Recording
+# Sleepy Durian World – Facial Recognition Time Recording
 
 **Project** | Windows + CPU | ArcFace + Docker
 
