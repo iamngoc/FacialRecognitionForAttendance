@@ -1,4 +1,4 @@
-# Sleepy Durian World – Facial Recognition Time Recording
+# SD World – Facial Recognition Time Recording
 
 Windows + CPU + ArcFace + Docker
 
@@ -32,18 +32,19 @@ Camera → ArcFace AI → Person recognized? → Log time in DB → Dashboard
 
 ```powershell
 # Open project folder
-cd C:\Users\%USERNAME%\Desktop\TimeRecordingwithfacialRecognition
+cd ...\FacialRecognitionForAttendance
 
 # First start: delete old volume to ensure init.sql runs cleanly
 docker volume rm sd_db_data
 
 # Build and start (first time ~10-15 minutes)
 docker-compose up --build
+ATTENTION: Docker Desktop should be opened, otherweise the order won't work.
 ```
 
 Wait until you see:
 ```
-sd_backend  | System ready.
+sd_backend  | Healthy.
 ```
 
 **Check in browser:**
@@ -61,16 +62,16 @@ sd_backend  | System ready.
 Open a **new** PowerShell window:
 
 ```powershell
-cd C:\Users\%USERNAME%\Desktop\TimeRecordingwithfacialRecognition\scripts
+cd ...\FacialRecognitionForAttendance\scripts
 
 # Install Python packages (only once)
 pip install insightface onnxruntime opencv-python requests numpy
 
 # Register via webcam (9 photos)
-python enrollment_script.py --id 1 --name "Sleepy Durian"
+python enrollment_script.py --id 1 --name "Sean Dora"
 
 # Register from a photo folder (alternative)
-python enrollment_script.py --id 1 --name "Sleepy Durian" --folder "C:/photos"
+python enrollment_script.py --id 1 --name "Sean Dora" --folder "C:/photos"
 ```
 
 **Arguments:**
@@ -105,18 +106,13 @@ Press **`q`** in the camera window to quit.
 
 ```powershell
 # Show all employees (and whether they have an embedding registered)
-docker exec -it sd_database psql -U sd_admin -d sd_timerecording -c \
-  "SELECT id, name, email, (embedding IS NOT NULL) AS registered FROM employees;"
+docker exec -it sd_database psql -U sd_admin -d sd_timerecording -c "SELECT id, name, email, (embedding IS NOT NULL) AS registered FROM employees;"
 
 # Today's time recording
-docker exec -it sd_database psql -U sd_admin -d sd_timerecording -c \
-  "SELECT e.name, t.scan_type, t.scan_time, t.confidence_score \
-   FROM timerecording t JOIN employees e ON t.employee_id = e.id \
-   ORDER BY t.scan_time;"
+docker exec -it sd_database psql -U sd_admin -d sd_timerecording -c "SELECT e.name, t.scan_type, t.scan_time, t.confidence_score FROM timerecording t JOIN employees e ON t.employee_id = e.id ORDER BY t.scan_time;"
 
 # Working hours summary (via view)
-docker exec -it sd_database psql -U sd_admin -d sd_timerecording -c \
-  "SELECT * FROM office_hours;"
+docker exec -it sd_database psql -U sd_admin -d sd_timerecording -c "SELECT * FROM office_hours;"
 ```
 
 ---
@@ -155,7 +151,7 @@ Full interactive docs: **http://localhost:8000/docs**
 ## 📁 Project Structure
 
 ```
-TimeRecordingwithfacialRecognization/
+TimeRecordingwithfacialRecognition/
 ├── docker-compose.yml              # Start everything with 1 command
 ├── database/
 │   └── init.sql                    # DB schema + initial employee data
@@ -209,7 +205,6 @@ TimeRecordingwithfacialRecognization/
 
 ## Notes
 
-1. **PostgreSQL + pgvector** stores who work at Sleepy Durian World, when they arrive, and their facial fingerprint as 512 numbers
 1. **PostgreSQL + pgvector** stores who work at Sleepy Durian World, when they arrive, and their facial fingerprint as 512 numbers
 2. **ArcFace** turns every face into 512 numbers — a unique "fingerprint" — using the `buffalo_l` AI model
 3. **FastAPI** is the "waiter" that receives requests from the camera and returns answers
